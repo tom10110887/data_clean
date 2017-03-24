@@ -17,4 +17,3 @@ c = list((v,k) for k,v in counts.items())
 c.sort(reverse = True)
 for em in c[:100]: #print top 100 email domain
     print(em)
-files.close()
