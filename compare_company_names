@@ -1,0 +1,92 @@
+import numpy as np
+import pandas as pd
+import time
+
+def compare(str1,str2):
+
+        # 最短修改字数
+
+    xlen = len(str1) + 1
+    ylen = len(str2) + 1
+
+    dp = np.zeros(shape=(xlen, ylen), dtype=int)
+
+    for i in range(0, xlen):
+        dp[i][0] = i
+    for j in range(0, ylen):
+        dp[0][j] = j
+
+    for i in range(1, xlen):
+        for j in range(1, ylen):
+            if str1[i - 1] == str2[j - 1]:
+                dp[i][j] = dp[i - 1][j - 1]
+            else:
+                dp[i][j] = 1 + min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1])
+    result = dp[xlen - 1][ylen - 1]
+    return result
+
+def find_min(lst1,lst2):
+    # 导入忽略词列表ban_list
+    file1 = pd.read_excel(r'D:/temp/compare/ban_list.xlsx')
+    list3 = file1['忽略列表'].tolist()
+
+    len1 = len(lst1)
+    len2 = len(lst2)
+
+    lst3 = list()
+    dic1 = dict()
+
+    for i in range(0,len1):
+        dic1 = {}
+        #lst3 = []
+        for j in range(0,len2):
+
+            str1 = str(lst1[i])
+            str2 = str(lst2[j])
+            str3 = str1
+            str4 = str2
+
+            for m in list3:
+                str3 = str3.replace(m, "", 55)
+                str4 = str4.replace(m, "", 55)
+            
+            com = compare(str3,str4)
+            index1 = (str1,str2)
+            dic1[index1] = com
+        min_value = min(zip(dic1.values()))
+        val = int(len(str3) / 2)
+        for key,value in dic1.items():
+            if value == min_value:
+                if value < val:
+                    lst3.append([key,value])
+
+    return lst3
+
+start = time.clock()
+
+file1 = pd.read_excel(r'D:/temp/compare/na_std.xlsx')
+lst2 = file1['公司名称'].tolist()
+file2 = pd.read_excel(r'D:/temp/compare/company.xlsx')
+lst1 = file2['公司名称2'].tolist()
+
+lst_result = find_min(lst1,lst2)
+lst_result2 = list()
+lst_total = list()
+
+for lst in lst_result:
+    lst_result2 = (list(lst[0]))
+    lst_result2.append(lst[1])
+    lst_total.append(lst_result2)
+
+lst_name = ['源','标准','修改']
+
+df = pd.DataFrame(np.array(lst_total),columns = lst_name)
+
+df.to_excel(r'D:\temp\compare\output.xlsx',sheet_name='Sheet1')
+
+end_time = time.clock()
+
+total_time = str(end_time - start)
+
+print("输出完成")
+print("总共花费时间:" + total_time)
