@@ -1,0 +1,101 @@
+Sub 识别公共邮箱()
+
+Dim sheetname As String
+Dim pathname As String
+Dim str1 As String
+Dim b1, b2, b3, b4
+Dim Wb As Workbook
+Dim a1, a2
+
+'导入公共邮箱列表
+
+    Application.DisplayAlerts = False
+    On Error Resume Next
+    
+    Worksheets("公共邮箱列表").Delete
+    Application.DisplayAlerts = True
+    
+    sheetname = "公共邮箱列表"
+    pathname = "D:\王祥炎工作\工作内容\基准库_筹建\常见公共邮箱.xlsx"
+    Application.Sheets.Add.Name = sheetname
+    
+    Application.ScreenUpdating = False
+    
+    
+    Set Wb = GetObject(pathname)
+        With Wb.Sheets(1).UsedRange
+            Range("A1").Resize(.Rows.Count, .Columns.Count) = .Value
+            Wb.Close False
+        End With
+    Set Wb = Nothing
+    
+    a1 = Range("a1").End(xlDown).Row
+    
+    Range(Cells(2, 1), Cells(a1, 1)).Name = "公共"
+
+ActiveWorkbook.Worksheets("Sheet0").Select
+
+'拆分邮箱后缀
+    Dim i1, i2
+    Dim b5, b6, b7, b8, b9
+    Dim arr1, arr2
+    
+'b1定位最后一列+1
+'b2为联系人邮箱的列数
+'b3是列表总行数
+
+    b1 = Range("A1").End(xlToRight).Column + 1
+    Cells(1, b1).Value = "邮箱后缀"
+    Cells(1, b1 + 1).Value = "是否公共邮箱"
+    
+    For i1 = 1 To b1 - 1
+        If Cells(1, i1).Value = "联系人邮箱" Then
+            b2 = i1
+        End If
+    Next
+    
+    b3 = Cells(1, b2).End(xlDown).Row
+    
+    arr1 = Range(Cells(2, b2), Cells(b3, b1 + 1))
+            
+    b4 = UBound(arr1)
+    b9 = UBound(arr1, 2)
+    
+    For i2 = 1 To b4
+        str1 = arr1(i2, 1)
+        b5 = Len(str1)
+        b6 = InStr(str1, "@") + 1
+        b7 = Mid(str1, b6, b5)
+        arr1(i2, b9 - 1) = b7
+    Next
+'识别公共邮箱
+
+    Dim c1, c2
+    Dim x, y
+    Dim str_1 As String
+    Dim str_2 As String
+    
+    arr2 = Range("公共")
+    c1 = b4
+    c2 = UBound(arr2)
+    
+    For x = 1 To c1
+        For y = 1 To c2
+            str_1 = UCase(arr1(x, b9 - 1))
+            str_2 = UCase(arr2(y, 1))
+            If str_1 = str_2 Then
+                arr1(x, b9) = "公共邮箱"
+            End If
+        Next
+    Next
+    
+    Range(Cells(2, b2), Cells(b3, b1 + 1)) = arr1
+    
+    ActiveSheet.UsedRange.Select
+    Selection.AutoFilter
+    ActiveSheet.Range("$A$1:$H$100001").AutoFilter Field:=8, Criteria1:=""
+    ActiveWorkbook.Save
+    
+    Application.ScreenUpdating = True
+
+End Sub
